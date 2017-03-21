@@ -1,14 +1,17 @@
 #include "SH1106_SPI.h"
+#include <SPI.h>
+
 
 SH1106_SPI::SH1106_SPI()
 {
 }
 
-void SH1106_SPI::begin(bool invert, bool fastSpi, uint8_t contrast, uint8_t Vpp)
+void SH1106_SPI::begin(bool invert, bool fastSpi, uint8_t contrast, uint8_t Vpp, bool useReset)
 {
-	pinMode(PIN_DC,OUTPUT);
-	pinMode(PIN_RESET,OUTPUT);
-	pinMode(PIN_CS,OUTPUT);
+	pinMode(SH1106_PIN_DC,OUTPUT);
+	pinMode(SH1106_PIN_CS,OUTPUT);
+	if (useReset)
+		pinMode(SH1106_PIN_RESET,OUTPUT);
 
 	SPI.begin();
 	if (fastSpi)
@@ -19,7 +22,8 @@ void SH1106_SPI::begin(bool invert, bool fastSpi, uint8_t contrast, uint8_t Vpp)
 	Vpp &= 0x03;
 
 	// Must reset LCD first!
-	digitalWrite(PIN_RESET,HIGH);
+	if (useReset)
+		digitalWrite(SH1106_PIN_RESET,HIGH);
 	
 	this->writeLcd(SH1106_COMMAND, 0xAE);           /*display off*/
 	this->writeLcd(SH1106_COMMAND, 0x02);           /*set lower column address*/
@@ -119,33 +123,23 @@ void SH1106_SPI::advanceXY(uint8_t columns)
 
 void SH1106_SPI::writeLcd(uint8_t dataOrCommand, const uint8_t *data, uint16_t count)
 {
-	if (dataOrCommand==0)
-	{
-		digitalWrite(PIN_DC,LOW);
-	}
-	else
-	{
-		digitalWrite(PIN_DC,HIGH);
-	}
-	digitalWrite(PIN_CS,LOW);
+	digitalWrite(SH1106_PIN_CS, LOW);
+	digitalWrite(SH1106_PIN_DC, dataOrCommand);
 
-    	for (uint16_t i = count; i > 0; i--)
-	{
+   	for (uint16_t i = count; i > 0; i--)
 		SPI.transfer(data[count-i]);
-	}
+
+	digitalWrite(SH1106_PIN_CS, HIGH);
 }
 
 void SH1106_SPI::writeLcd(uint8_t dataOrCommand, uint8_t data)
 {
-	if (dataOrCommand==0)
-	{
-		digitalWrite(PIN_DC,LOW);
-	}
-	else
-	{
-		digitalWrite(PIN_DC,HIGH);
-	}
-	digitalWrite(PIN_CS,LOW);
+	digitalWrite(SH1106_PIN_CS, LOW);
+	digitalWrite(SH1106_PIN_DC, dataOrCommand);
 
 	SPI.transfer(data);
+	
+	digitalWrite(SH1106_PIN_CS, HIGH);
+	
 }
+

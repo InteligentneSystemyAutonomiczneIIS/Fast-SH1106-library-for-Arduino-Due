@@ -12,32 +12,31 @@
  All text above must be included in any redistribution.
 ********************************************************************/
 
+#if !defined(_SH1106_SPI_H_)
+#define _SH1106_SPI_H_
+
+#include <Arduino.h>
+
 // Version 1.0 -- May 26, 2014
 
 // Ported to the Spark Core by m3gg -- October 18, 2014
+// Ported to the Arduino Due by Tomasz Jaworski -- March, 2017
 
-#pragma once
-#include "application.h"
-
-// It is very important to wire the LCD correctly. 
-// The following is the default wiring configuration for a Spark Core:
-// PIN_DC       D1 
-// PIN_RESET    D0 
-// PIN_CS       A2
-// PIN_SDIN     A5 
-// PIN_SCLK     A3 
-
-// You may change pins D/C, Reset and CS to map them to different pins on your Spark Core. 
-// Please keep SDA/DI and SCL/CLK connected to your Spark's MOSI and SCK (hardware SPI) pins.
+// You may change pins D/C, Reset and CS to map them to different pins on your Arduino Due Board. 
+// Please keep DATAIN and CLK connected to your MOSI and SCK pins on Arduino (hardware SPI).
 // You can remap the LCD control pins by changing the following '#define' values:
 
-#define PIN_DC              D1
-#define PIN_RESET           D0
-#define PIN_CS              A2
+#define SH1106_PIN_DC				25
+#define SH1106_PIN_CS				22
+#define SH1106_PIN_RESET			20
+
+// In case of reset, you can ommit the correct definition as long as you connect the SH1106's RESET pin
+// to Arduino's RESET pin. If that is the case, set useReset to false (default). SH1106 will be reset 
+// during power up, hence further resets are not necessary.
 
 // When DC is '1' the LCD expects data, when it is '0' it expects a command.
 #define SH1106_COMMAND      0 
-#define SH1106_DATA         PIN_DC
+#define SH1106_DATA         1
 
 // You may find a different size screen, but this one is 128 by 64 pixels
 #define SH1106_X_PIXELS     128
@@ -61,9 +60,10 @@ public:
 	// fastSpi - True enables a /2 SPI divider, False leaves the divider at the default /4.
 	// contrast - Sets the contrast of the display, valid values are in the range of 0 - 255.
 	// Vpp - Sets the charge pump voltage for the display, 0 = 6.4V, 1 = 7.4V, 2 = 8.0V (controller default), 3 = 9.0V
+	// useReset - Uses custom reset pin; if set to false (by default) then SH1106's RESET has to be connected to Arduino's RESET pin
 	///***************************************************************************************************************
 
-	void begin(bool invert = false, bool fastSpi = false, uint8_t contrast = 128, uint8_t Vpp = 0);
+	void begin(bool invert = false, bool fastSpi = false, uint8_t contrast = 128, uint8_t Vpp = 0, bool useReset = false);
 	void clear();
 	uint8_t gotoXY(uint8_t x, uint8_t y);
 	virtual size_t write(uint8_t uint8_t);
@@ -96,7 +96,7 @@ public:
 	uint8_t writeLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
 	uint8_t writeRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool fill = false);
 	
-	void begin(bool invert = false, bool fastSpi = false, uint8_t contrast = 0x80, uint8_t Vpp = 0x00);
+	void begin(bool invert = false, bool fastSpi = false, uint8_t contrast = 0x80, uint8_t Vpp = 0x00, bool useReset = false);
 	void clear(bool render = true);
 	uint8_t gotoXY(uint8_t x, uint8_t y);
 	virtual size_t write(uint8_t uint8_t);
@@ -213,3 +213,6 @@ static const uint8_t ASCII[][5] = {
 	,{ 0x10, 0x08, 0x08, 0x10, 0x08 } // 7e ~
 	,{ 0x78, 0x46, 0x41, 0x46, 0x78 } // 7f DEL
 };
+
+#endif // _SH1106_SPI_H_
+
